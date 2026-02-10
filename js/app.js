@@ -37,34 +37,55 @@ const App = {
         return url;
     },
 
-    // ✅ ฟังก์ชันสั่งพิมพ์ผ่าน RAWbt
+    // ✅ ฟังก์ชันสั่งพิมพ์ผ่าน RAWbt (อัปเดตแก้กระดาษขาว)
     printToRawbt: (data) => {
         // 1. ใส่ข้อมูลลง Template
         document.getElementById('p-unit').innerText = data.target_unit;
         document.getElementById('p-plate').innerText = data.license_plate;
         document.getElementById('p-type').innerText = data.visitor_type;
-        document.getElementById('p-time').innerText = new Date().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'});
+        document.getElementById('p-time').innerText = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
         document.getElementById('p-id').innerText = data.id;
 
         // 2. สร้าง QR Code
         const qrDiv = document.getElementById('p-qrcode');
-        qrDiv.innerHTML = ""; 
-        new QRCode(qrDiv, {
-            text: data.id,
-            width: 150,
-            height: 150,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.L
-        });
+        qrDiv.innerHTML = "";
 
-        // 3. รอ QR Render เสร็จ แล้วส่ง Intent
+        // ใช้ setTimeout เพื่อความชัวร์ว่า DOM เคลียร์แล้ว
         setTimeout(() => {
-            const content = document.getElementById('slip-template').innerHTML;
-            const html = `<html><head><meta charset="utf-8"></head><body style="margin:0; padding:0;">${content}</body></html>`;
-            const base64 = btoa(unescape(encodeURIComponent(html)));
-            window.location.href = "rawbt:data:text/html;base64," + base64;
-        }, 500);
+            new QRCode(qrDiv, {
+                text: data.id,
+                width: 120, // ลดขนาดลงนิดหน่อยเพื่อให้พอดีกระดาษ 58mm
+                height: 120,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.L
+            });
+
+            // 3. รอ QR Render เสร็จ (เพิ่มเวลาเป็น 800ms) แล้วค่อยส่ง
+            setTimeout(() => {
+                const content = document.getElementById('slip-template').innerHTML;
+
+                // เพิ่ม style body ให้ชัดเจนว่าเป็นพื้นขาว ตัวหนังสือดำ
+                const html = `
+                    <html>
+                    <head>
+                        <meta charset="utf-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    </head>
+                    <body style="margin:0; padding:0; background-color: #ffffff; color: #000000;">
+                        ${content}
+                    </body>
+                    </html>
+                `;
+
+                // ส่งข้อมูลไปยัง RAWbt App
+                const base64 = btoa(unescape(encodeURIComponent(html)));
+
+                // ใช้ location.replace เพื่อไม่ให้ back กลับมาแล้ว print ซ้ำ
+                window.location.replace("rawbt:data:text/html;base64," + base64);
+
+            }, 800); // รอ 0.8 วินาที
+        }, 100);
     },
 
     setupDropdowns: () => {
@@ -94,10 +115,10 @@ const App = {
         document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden-view'));
         const target = document.getElementById(`view-${viewId}`);
         if (target) target.classList.remove('hidden-view');
-        
+
         if (viewId === 'dashboard') {
             App.resetForms();
-            App.loadDashboardStatus(); 
+            App.loadDashboardStatus();
         }
     },
 
@@ -105,25 +126,25 @@ const App = {
         document.querySelectorAll('input').forEach(el => el.value = '');
         const typeSelect = document.getElementById('in-type');
         if (typeSelect) typeSelect.selectedIndex = 0;
-        
+
         App.data = { vehicle: null, id_card: null, vehicle_out: null, currentId: null };
-        
+
         document.querySelectorAll('[id^="preview-"]').forEach(el => {
             el.src = '';
             el.classList.add('hidden-view');
-            if(el.parentElement) el.parentElement.classList.remove('opacity-50');
+            if (el.parentElement) el.parentElement.classList.remove('opacity-50');
         });
 
         const resArea = document.getElementById('checkout-result-area');
-        if(resArea) resArea.classList.add('hidden-view');
-        
+        if (resArea) resArea.classList.add('hidden-view');
+
         const imgBox = document.getElementById('out-res-img-box');
         const imgEl = document.getElementById('out-res-img');
-        if(imgBox) imgBox.classList.add('hidden-view');
-        if(imgEl) imgEl.src = '';
+        if (imgBox) imgBox.classList.add('hidden-view');
+        if (imgEl) imgEl.src = '';
 
         const searchList = document.getElementById('search-list');
-        if(searchList) searchList.innerHTML = '<div class="text-center text-gray-400 py-10">พิมพ์ทะเบียนเพื่อค้นหา</div>';
+        if (searchList) searchList.innerHTML = '<div class="text-center text-gray-400 py-10">พิมพ์ทะเบียนเพื่อค้นหา</div>';
     },
 
     loadDashboardStatus: async () => {
@@ -136,7 +157,7 @@ const App = {
             const result = await API.send('searchLogs', [{ status: 'IN' }]);
 
             if (result && result.items && result.items.length > 0) {
-                listEl.innerHTML = ''; 
+                listEl.innerHTML = '';
                 result.items.forEach(item => {
                     const timeIn = new Date(item.timestamp_in);
                     const now = new Date();
@@ -149,12 +170,12 @@ const App = {
 
                     const card = document.createElement('div');
                     card.className = `p-3 rounded-lg border flex justify-between items-center cursor-pointer active:scale-[0.98] transition-all ${isOverstay ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100 shadow-sm'}`;
-                    
+
                     card.onclick = () => {
                         App.navTo('checkout');
                         setTimeout(() => {
                             const input = document.getElementById('out-plate');
-                            if(input) { input.value = item.license_plate; App.searchForCheckout(); }
+                            if (input) { input.value = item.license_plate; App.searchForCheckout(); }
                         }, 100);
                     };
 
@@ -167,7 +188,7 @@ const App = {
                             <div class="text-xs text-gray-500 flex gap-2"><span>🏠 ${item.target_unit}</span><span>👤 ${item.visitor_type}</span></div>
                         </div>
                         <div class="text-right">
-                            <div class="text-xs font-mono text-gray-400">${timeIn.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})}</div>
+                            <div class="text-xs font-mono text-gray-400">${timeIn.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</div>
                             <div class="text-sm font-bold ${isOverstay ? 'text-red-600' : 'text-green-600'}">${Math.floor(diffHrs)}h ${diffMins}m</div>
                         </div>`;
                     listEl.appendChild(card);
@@ -192,11 +213,11 @@ const App = {
         if (!App.data.id_card) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาถ่ายรูปบัตร (PDPA)', 'warning');
 
         Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-        
+
         const res = await API.send('createCheckin', [{
-            license_plate: plate, 
-            visitor_type: type, 
-            target_unit: unit, 
+            license_plate: plate,
+            visitor_type: type,
+            target_unit: unit,
             note: note,
             images: { vehicle: App.data.vehicle, id_card: App.data.id_card, id_card_is_watermarked: true }
         }]);
@@ -229,31 +250,31 @@ const App = {
         Swal.close();
 
         const resArea = document.getElementById('checkout-result-area');
-        
+
         if (res && res.items.length > 0) {
             const item = res.items[0];
             App.data.currentId = item.id;
-            
+
             const diffHrs = (new Date() - new Date(item.timestamp_in)) / 3600000;
             const typeConfig = CONFIG.VISITOR_TYPES.find(t => t.value === item.visitor_type);
             const maxHours = typeConfig ? (typeConfig.max_hours || 0) : 0;
-            
+
             let alertHtml = "";
             if (maxHours > 0 && diffHrs > maxHours) {
                 alertHtml = `<div class="bg-red-100 text-red-700 p-2 mt-2 text-sm rounded">🚨 <b>เกินเวลา!</b></div>`;
             }
-            
+
             document.getElementById('out-res-plate').innerText = item.license_plate;
-            document.getElementById('out-res-info').innerHTML = 
+            document.getElementById('out-res-info').innerHTML =
                 `${item.visitor_type} -> ${item.target_unit}<br>
                  <span class="text-xs text-gray-500">เข้า: ${new Date(item.timestamp_in).toLocaleTimeString('th-TH')}</span>
                  ${alertHtml}`;
-            
+
             document.getElementById('out-res-id').value = item.id;
 
             const imgBox = document.getElementById('out-res-img-box');
             const imgEl = document.getElementById('out-res-img');
-            
+
             if (item.image_url_in) {
                 imgEl.src = App.getDirectUrl(item.image_url_in);
                 imgBox.classList.remove('hidden-view');
@@ -275,11 +296,11 @@ const App = {
 
         Swal.fire({ title: 'กำลังบันทึกออก...', didOpen: () => Swal.showLoading() });
         const res = await API.send('checkout', [{ id: id }, "MANUAL", { vehicle_out: App.data.vehicle_out || null }, "GUARD"]);
-        
+
         if (res) {
             Swal.fire({
-                title: '✅ รถออกสำเร็จ', 
-                text: `ทะเบียน: ${res.license_plate}`, 
+                title: '✅ รถออกสำเร็จ',
+                text: `ทะเบียน: ${res.license_plate}`,
                 icon: 'success'
             }).then(() => App.navTo('dashboard'));
         }
@@ -290,10 +311,10 @@ const App = {
         Swal.fire({ didOpen: () => Swal.showLoading() });
         const res = await API.send('searchLogs', [{ license_plate: q }]);
         Swal.close();
-        
+
         const list = document.getElementById('search-list');
         list.innerHTML = '';
-        
+
         if (res && res.items.length > 0) {
             res.items.forEach(item => {
                 const isIN = item.status === 'IN';
@@ -303,12 +324,12 @@ const App = {
                             <div class="font-bold text-lg text-gray-800">${item.license_plate}</div>
                             <div class="text-sm text-gray-600">${item.visitor_type} → ${item.target_unit}</div>
                         </div>
-                        <div class="font-bold ${isIN?'text-green-600':'text-gray-500'}">${item.status}</div>
+                        <div class="font-bold ${isIN ? 'text-green-600' : 'text-gray-500'}">${item.status}</div>
                     </div>
                 `;
             });
-        } else { 
-            list.innerHTML = '<div class="text-center text-gray-400 py-10">ไม่พบข้อมูล</div>'; 
+        } else {
+            list.innerHTML = '<div class="text-center text-gray-400 py-10">ไม่พบข้อมูล</div>';
         }
     }
 };
