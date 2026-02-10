@@ -1,13 +1,13 @@
 /**
  * js/app.js
- * Version: 2.1 (Text Only Printing - Free Rawbt)
+ * Version: 2.2 (Production Ready - Text Print)
  */
 
 const App = {
     data: { vehicle: null, id_card: null, vehicle_out: null, currentId: null },
 
     init: async () => {
-        console.log("App Initializing v2.1 (Text Mode)...");
+        console.log("App Initializing v2.2...");
 
         if (typeof CONFIG === 'undefined') {
             Swal.fire('Error', 'ไม่พบไฟล์ js/config.js', 'error');
@@ -37,41 +37,46 @@ const App = {
         return url;
     },
 
-    // ✅ ฟังก์ชันพิมพ์แบบ Text Mode (รองรับ Rawbt รุ่นฟรี 100%)
+    // ✅ ฟังก์ชันพิมพ์ใบเสร็จ (Text Mode) - ทำงานได้ทันทีบนแอปฟรี
     printToRawbt: (data) => {
         let text = "";
 
-        // Header
+        // --- Header (หัวบิล) ---
         text += "[c][b]VMS GUARD[/b][/c]\n";
         text += "[c]VISITOR PASS[/c]\n";
         text += "[c]--------------------------------[/c]\n";
         text += "\n";
 
-        // Body (เน้นตัวใหญ่ที่บ้านเลขที่ และ ทะเบียน)
+        // --- Body Info (ข้อมูลหลัก) ---
+        // ใช้ [b] ตัวหนา เพื่อให้อ่านง่าย
         text += "[l]ติดต่อบ้านเลขที่:[/l]\n";
-        text += "[c][b]" + data.target_unit + "[/b][/c]\n"; // [b] = ตัวหนา
+        text += "[c][b]" + data.target_unit + "[/b][/c]\n"; 
         text += "\n";
         
         text += "[l]ทะเบียนรถ:[/l]\n";
         text += "[c][b]" + data.license_plate + "[/b][/c]\n";
         text += "\n";
 
-        // Info
-        text += "[l]ประเภท: " + data.visitor_type + "[/l]\n";
+        // --- Details (รายละเอียด) ---
+        text += "[l]ประเภท:   " + data.visitor_type + "[/l]\n";
         text += "[l]เวลาเข้า: " + new Date().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'}) + "[/l]\n";
-        text += "[l]Ticket ID: " + data.id + "[/l]\n"; // เก็บไว้เผื่อเช็ค
-        
-        // Footer (พื้นที่เซ็นชื่อ)
+        text += "[l]Ticket ID: " + data.id + "[/l]\n";
         text += "\n";
+
+        // --- Footer (ส่วนท้ายและลายเซ็น) ---
         text += "[c]--------------------------------[/c]\n";
-        text += "[l]ลายเซ็นลูกบ้าน (Stamp/Sign):[/l]\n";
+        text += "\n";
+        text += "[l]ลายเซ็นลูกบ้าน (Sign):[/l]\n";
         text += "\n\n\n"; // เว้นบรรทัดให้เซ็น
         text += "[c]................................[/c]\n";
+        text += "\n";
+        
+        // --- Note ---
         text += "[c]*โปรดคืนบัตรเมื่อออก*[/c]\n";
         text += "[c]PDPA: เพื่อความปลอดภัย[/c]\n";
-        text += "\n\n"; // Feed กระดาษ
+        text += "\n\n\n"; // Feed กระดาษให้ฉีกง่าย
 
-        // ส่งคำสั่งไป Rawbt (แบบ Text)
+        // ส่งคำสั่งไป Rawbt
         window.location.href = "rawbt:" + encodeURIComponent(text);
     },
 
@@ -210,7 +215,7 @@ const App = {
         }]);
 
         if (res) {
-            // ✅ พิมพ์แบบ Text Mode
+            // ✅ สั่งพิมพ์ทันที (ไม่ต้องมีปุ่ม Test)
             App.printToRawbt({
                 id: res.id,
                 target_unit: unit,
@@ -219,7 +224,7 @@ const App = {
             });
 
             Swal.fire({
-                title: '✅ บันทึก & พิมพ์',
+                title: '✅ บันทึก & กำลังพิมพ์',
                 html: `Ticket: <b>${res.id}</b><br>ทะเบียน: ${res.license_plate}`,
                 icon: 'success',
                 timer: 2000,

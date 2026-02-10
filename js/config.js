@@ -1,5 +1,5 @@
 const CONFIG = {
-    // ⚠️ ใส่ URL ของคุณตรงนี้
+    // ⚠️ URL ที่คุณยืนยันล่าสุด
     API_URL: "https://script.google.com/macros/s/AKfycby7ii3bR2GN9VbbqNHSgSG8qU9ktSNlps5zgWyA2UMNkZ1DfjL1lR8txznVKsf9gmDM/exec", 
     
     PDPA_TEXT: "PDPA • ใช้เพื่อการรักษาความปลอดภัยเท่านั้น",

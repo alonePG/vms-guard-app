@@ -25,7 +25,7 @@
                 </div>
             </div>
         </div>
-        <div class="text-xs text-gray-400 font-mono">v2.1 Text</div>
+        <div class="text-xs text-gray-400 font-mono">v2.2 PRO</div>
     </header>
 
     <main class="flex-1 overflow-y-auto p-4 pb-20 relative bg-gray-50">
@@ -46,11 +46,7 @@
                 <div class="text-left"><div class="text-lg font-bold text-gray-800">ค้นหาประวัติ</div><div class="text-gray-400 text-sm">Search Logs</div></div>
             </button>
 
-            <button onclick="testTextPrint()" class="w-full bg-gray-700 text-white p-4 rounded-xl font-bold shadow-lg mt-4 active:scale-95 transition-transform">
-                🖨️ TEST PRINT (TEXT MODE)
-            </button>
-
-            <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div class="mt-2 bg-white rounded-xl shadow-sm border border-gray-200 flex-1 flex flex-col min-h-0 overflow-hidden">
                 <div class="p-3 border-b bg-gray-50 flex justify-between items-center shrink-0">
                     <h3 class="font-bold text-gray-700 flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> รถในโครงการ
@@ -131,20 +127,6 @@
         </div>
 
     </main>
-
-    <script>
-        function testTextPrint() {
-            let text = "";
-            text += "[c][b]VMS GUARD (TEST)[/b][/c]\n";
-            text += "[c]--------------------------------[/c]\n\n";
-            text += "[l]บ้านเลขที่: [b]A-101[/b][/l]\n";
-            text += "[l]ทะเบียน:   [b]กก 9999[/b][/l]\n";
-            text += "\n";
-            text += "[c]ทดสอบการพิมพ์สำเร็จ ✅[/c]\n";
-            text += "\n\n";
-            window.location.href = "rawbt:" + encodeURIComponent(text);
-        }
-    </script>
 
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
