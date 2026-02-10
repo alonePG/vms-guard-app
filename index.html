@@ -26,7 +26,7 @@
                 </div>
             </div>
         </div>
-        <div class="text-xs text-gray-400 font-mono">v1.9 Print</div>
+        <div class="text-xs text-gray-400 font-mono">v2.0 Test</div>
     </header>
 
     <main class="flex-1 overflow-y-auto p-4 pb-20 relative bg-gray-50">
@@ -47,7 +47,11 @@
                 <div class="text-left"><div class="text-lg font-bold text-gray-800">ค้นหาประวัติ</div><div class="text-gray-400 text-sm">Search Logs</div></div>
             </button>
 
-            <div class="mt-2 bg-white rounded-xl shadow-sm border border-gray-200 flex-1 flex flex-col min-h-0 overflow-hidden">
+            <button onclick="testFullPrint()" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold shadow-lg mt-4 active:scale-95 transition-transform">
+                🖨️ TEST QR & IMAGE
+            </button>
+
+            <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 flex-1 flex flex-col min-h-0 overflow-hidden">
                 <div class="p-3 border-b bg-gray-50 flex justify-between items-center shrink-0">
                     <h3 class="font-bold text-gray-700 flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> รถในโครงการ
@@ -145,7 +149,7 @@
             </div>
             <div style="border-bottom: 2px dashed #000; margin: 5px 0;"></div>
             <div id="p-qrcode" style="display: flex; justify-content: center; margin: 10px auto;"></div>
-            <div id="p-id" style="font-size: 14px; margin-bottom: 5px;">ID-12345</div>
+            <div id="p-id" style="font-size: 14px; margin-bottom: 5px;">ID-TEST-001</div>
             <div style="border-bottom: 2px dashed #000; margin: 10px 0;"></div>
             <div style="text-align: left; font-size: 14px;">
                 <div>ลายเซ็นลูกบ้าน:</div>
@@ -154,43 +158,56 @@
             <div style="font-size: 12px; margin-top: 15px;">
                 *คืนบัตรเมื่อออก*<br>PDPA: เพื่อความปลอดภัย
             </div>
+            <div style="margin-top: 10px; display: flex; justify-content: center;">
+                 <img src="https://via.placeholder.com/150x50.png?text=VMS+GUARD" alt="Logo" style="width: 150px; opacity: 0.5;">
+            </div>
         </div>
     </div>
 
-    <div class="p-4">
-    <button onclick="testSimplePrint()" class="w-full bg-gray-800 text-white p-4 rounded-xl font-bold shadow-lg">
-        🖨️ กดเพื่อทดสอบพิมพ์ (Hello World)
-    </button>
-</div>
+    <script>
+        function testFullPrint() {
+            // 1. จำลองการสร้าง QR Code
+            const qrDiv = document.getElementById('p-qrcode');
+            qrDiv.innerHTML = ""; 
+            
+            // สร้าง QR Code จริงๆ ลงใน Div ที่ซ่อนอยู่
+            new QRCode(qrDiv, {
+                text: "TEST-QR-123456789",
+                width: 150,
+                height: 150,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.L
+            });
 
-<script>
-function testSimplePrint() {
-    // 1. ข้อความง่ายๆ ที่ต้องการพิมพ์
-    const simpleHtml = `
-        <html>
-        <body style="font-size: 30px; text-align: center; font-weight: bold;">
-            <br>
-            TEST PRINT<br>
-            ทดสอบภาษาไทย<br>
-            ----------------<br>
-            Success! ✅<br>
-            <br>
-        </body>
-        </html>
-    `;
+            // 2. รอให้ QR Render เสร็จ (500ms) แล้วค่อยส่งไป RAWbt
+            setTimeout(() => {
+                const content = document.getElementById('slip-template').innerHTML;
+                
+                // 3. ห่อด้วย HTML Structure
+                const html = `
+                    <html>
+                    <head>
+                        <meta charset="utf-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    </head>
+                    <body style="margin:0; padding:0; background-color: #ffffff; color: #000000;">
+                        ${content}
+                    </body>
+                    </html>
+                `;
 
-    // 2. แปลงเป็น Base64
-    const base64 = btoa(unescape(encodeURIComponent(simpleHtml)));
-
-    // 3. ส่งไป Rawbt ทันที
-    window.location.href = "rawbt:data:text/html;base64," + base64;
-}
-</script>
+                // 4. แปลงเป็น Base64 และส่งไปแอป RAWbt
+                const base64 = btoa(unescape(encodeURIComponent(html)));
+                window.location.href = "rawbt:data:text/html;base64," + base64;
+                
+            }, 500);
+        }
+    </script>
 
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script src="js/camera.js"></script>
     <script src="js/app.js"></script>
 </body>
-
 </html>
