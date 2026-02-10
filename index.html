@@ -164,44 +164,28 @@
         </div>
     </div>
 
-    <script>
+<script>
         function testFullPrint() {
-            // 1. จำลองการสร้าง QR Code
-            const qrDiv = document.getElementById('p-qrcode');
-            qrDiv.innerHTML = ""; 
-            
-            // สร้าง QR Code จริงๆ ลงใน Div ที่ซ่อนอยู่
-            new QRCode(qrDiv, {
-                text: "TEST-QR-123456789",
-                width: 150,
-                height: 150,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.L
-            });
+            // จำลองข้อมูล
+            const data = {
+                target_unit: "A-999",
+                license_plate: "กก 1234",
+                visitor_type: "TEST",
+                id: "TEST-QR-FREE"
+            };
 
-            // 2. รอให้ QR Render เสร็จ (500ms) แล้วค่อยส่งไป RAWbt
-            setTimeout(() => {
-                const content = document.getElementById('slip-template').innerHTML;
-                
-                // 3. ห่อด้วย HTML Structure
-                const html = `
-                    <html>
-                    <head>
-                        <meta charset="utf-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    </head>
-                    <body style="margin:0; padding:0; background-color: #ffffff; color: #000000;">
-                        ${content}
-                    </body>
-                    </html>
-                `;
+            // สร้างข้อความสำหรับพิมพ์ (Format ฟรี)
+            let text = "";
+            text += "[c][b]VMS GUARD (TEST)[/b][/c]\n";
+            text += "[c]--------------------------------[/c]\n";
+            text += "[l]บ้านเลขที่: [b]" + data.target_unit + "[/b]\n";
+            text += "[l]ทะเบียน:   [b]" + data.license_plate + "[/b]\n";
+            text += "\n";
+            text += "[c]<qrcode>" + data.id + "</qrcode>[/c]\n";
+            text += "\n\n";
 
-                // 4. แปลงเป็น Base64 และส่งไปแอป RAWbt
-                const base64 = btoa(unescape(encodeURIComponent(html)));
-                window.location.href = "rawbt:data:text/html;base64," + base64;
-                
-            }, 500);
+            // ส่งไปพิมพ์
+            window.location.href = "rawbt:" + encodeURIComponent(text);
         }
     </script>
 
@@ -211,3 +195,4 @@
     <script src="js/app.js"></script>
 </body>
 </html>
+
