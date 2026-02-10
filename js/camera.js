@@ -1,5 +1,11 @@
 const Camera = {
-    trigger: (type) => document.getElementById(`file-${type}`).click(),
+    trigger: (type) => {
+        const input = document.getElementById(`file-${type}`);
+        if (input) {
+            input.value = ''; // ✅ เพิ่มบรรทัดนี้: เคลียร์ค่าเก่าเพื่อให้กดถ่ายซ้ำได้
+            input.click();
+        }
+    },
     handleFile: (input, type, isWatermark = false) => {
         const file = input.files[0];
         if (!file) return;
@@ -22,7 +28,11 @@ const Camera = {
                 const prev = document.getElementById(`preview-${type}`);
                 prev.src = base64; prev.classList.remove('hidden-view');
                 if(prev.parentElement) prev.parentElement.classList.remove('opacity-50');
-                App.data[type] = base64;
+                
+                // เก็บข้อมูลลงตัวแปรหลัก
+                if (window.app && window.app.data) {
+                     window.app.data[type] = base64.split(',')[1];
+                }
             };
             img.src = e.target.result;
         };
