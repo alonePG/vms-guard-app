@@ -37,55 +37,41 @@ const App = {
         return url;
     },
 
-    // ✅ ฟังก์ชันสั่งพิมพ์ผ่าน RAWbt (อัปเดตแก้กระดาษขาว)
+// ✅ ฟังก์ชันสั่งพิมพ์ผ่าน RAWbt (ฉบับใช้ฟรี 100%)
     printToRawbt: (data) => {
-        // 1. ใส่ข้อมูลลง Template
-        document.getElementById('p-unit').innerText = data.target_unit;
-        document.getElementById('p-plate').innerText = data.license_plate;
-        document.getElementById('p-type').innerText = data.visitor_type;
-        document.getElementById('p-time').innerText = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-        document.getElementById('p-id').innerText = data.id;
+        // ใช้ Tag พิเศษของ Rawbt เพื่อจัดหน้า (ไม่ต้องแปลงเป็นรูป)
+        // [c]=กลาง, [b]=หนา, [l]=ชิดซ้าย, <qrcode>=สร้างคิวอาร์
+        
+        let text = "";
+        
+        // --- ส่วนหัว ---
+        text += "[c][b]VMS GUARD[/b][/c]\n";
+        text += "[c]VISITOR PASS[/c]\n";
+        text += "[c]--------------------------------[/c]\n";
+        text += "\n";
+        
+        // --- ข้อมูล (ตัวใหญ่หน่อยใช้ double width ถ้ามี) ---
+        text += "[l]บ้านเลขที่: [b]" + data.target_unit + "[/b]\n";
+        text += "[l]ทะเบียน:   [b]" + data.license_plate + "[/b]\n";
+        text += "[l]ประเภท:    " + data.visitor_type + "\n";
+        text += "[l]เวลาเข้า:    " + new Date().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'}) + "\n";
+        text += "\n";
+        
+        // --- QR Code (ให้ Rawbt สร้างให้เอง ฟรี) ---
+        text += "[c]<qrcode>" + data.id + "</qrcode>[/c]\n";
+        text += "[c]" + data.id + "[/c]\n";
+        text += "\n";
+        
+        // --- ส่วนท้าย ---
+        text += "[l]ลายเซ็นลูกบ้าน: .................[/l]\n";
+        text += "\n"; 
+        text += "[c]--------------------------------[/c]\n";
+        text += "[c]*คืนบัตรเมื่อออก*[/c]\n";
+        text += "[c]PDPA: เพื่อความปลอดภัย[/c]\n";
+        text += "\n\n"; // เว้นบรรทัดให้ฉีกง่ายๆ
 
-        // 2. สร้าง QR Code
-        const qrDiv = document.getElementById('p-qrcode');
-        qrDiv.innerHTML = "";
-
-        // ใช้ setTimeout เพื่อความชัวร์ว่า DOM เคลียร์แล้ว
-        setTimeout(() => {
-            new QRCode(qrDiv, {
-                text: data.id,
-                width: 120, // ลดขนาดลงนิดหน่อยเพื่อให้พอดีกระดาษ 58mm
-                height: 120,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.L
-            });
-
-            // 3. รอ QR Render เสร็จ (เพิ่มเวลาเป็น 800ms) แล้วค่อยส่ง
-            setTimeout(() => {
-                const content = document.getElementById('slip-template').innerHTML;
-
-                // เพิ่ม style body ให้ชัดเจนว่าเป็นพื้นขาว ตัวหนังสือดำ
-                const html = `
-                    <html>
-                    <head>
-                        <meta charset="utf-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    </head>
-                    <body style="margin:0; padding:0; background-color: #ffffff; color: #000000;">
-                        ${content}
-                    </body>
-                    </html>
-                `;
-
-                // ส่งข้อมูลไปยัง RAWbt App
-                const base64 = btoa(unescape(encodeURIComponent(html)));
-
-                // ใช้ location.replace เพื่อไม่ให้ back กลับมาแล้ว print ซ้ำ
-                window.location.replace("rawbt:data:text/html;base64," + base64);
-
-            }, 800); // รอ 0.8 วินาที
-        }, 100);
+        // ส่งคำสั่งไปที่แอป Rawbt
+        window.location.href = "rawbt:" + encodeURIComponent(text);
     },
 
     setupDropdowns: () => {
@@ -335,4 +321,5 @@ const App = {
 };
 
 window.app = App;
+
 window.addEventListener('DOMContentLoaded', () => { setTimeout(App.init, 100); });
